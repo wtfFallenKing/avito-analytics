@@ -1,0 +1,52 @@
+services:
+  postgres:
+    container_name: database
+    image: postgres
+    restart: always
+    env_file:
+      - ./.env
+    hostname: postgres_database
+    ports:
+      - 5432:5432
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis
+    restart: always
+    container_name: cache
+    hostname: redis_database
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache-data:/data
+    env_file:
+      - ./.env
+
+  adminer:
+    links:
+      - "postgres:database"
+    container_name: adminer
+    image: adminer
+    restart: always
+    environment:
+      host: localhost
+    ports:
+      - 8080:8080
+
+  backend:
+    links:
+      - "redis:cache"
+      - "postgres:database"
+
+    container_name: backend-app
+    restart: always
+    build: ./backend
+    env_file:
+      - ./.env
+    ports:
+      - 5000:5000
+
+volumes:
+  db-data:
+  cache-data:
